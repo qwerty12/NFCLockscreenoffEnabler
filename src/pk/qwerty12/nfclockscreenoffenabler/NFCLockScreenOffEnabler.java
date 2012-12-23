@@ -57,15 +57,15 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 							AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
 
 							final int currScreenState = (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState");
+							//We also don't need to run if the screen is already on, or if the user has chosen to enable NFC on the lockscreen only and the phone is not locked
+							if ((currScreenState == SCREEN_STATE_ON_UNLOCKED) || (prefs.getBoolean(PREF_LOCKED, true) && currScreenState != SCREEN_STATE_ON_LOCKED))
+							{
+								mScreenState = -1;
+								return;
+							}
+
 							synchronized (param.thisObject)   //Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 							{
-								//We also don't need to run if the screen is already on, or if the user has chosen to enable NFC on the lockscreen only and the phone is not locked
-								if ((currScreenState == SCREEN_STATE_ON_UNLOCKED) || (prefs.getBoolean(PREF_LOCKED, true) && currScreenState != SCREEN_STATE_ON_LOCKED))
-								{
-									mScreenState = -1;
-									return;
-								}
-
 								mScreenState = XposedHelpers.getIntField(param.thisObject, "mScreenState");
 								XposedHelpers.setIntField(param.thisObject, "mScreenState", SCREEN_STATE_ON_UNLOCKED);
 							}

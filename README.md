@@ -5,5 +5,3 @@ An Xposed modification that lets you select whether NFC is active on the lockscr
 unlocked and the screen on.
 
 Licensed under the GPL v3, but if included in a project, proper credit to me is expected.
-
-I will release a binary when a proper Java developer will be willing to look at my code and tell me if what I've written is absolute shit.
