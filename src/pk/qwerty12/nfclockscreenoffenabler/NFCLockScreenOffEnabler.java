@@ -4,12 +4,13 @@ import android.app.AndroidAppHelper;
 import android.content.Context;
 import android.content.SharedPreferences;
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import de.robv.android.xposed.XC_MethodHook;
 
-public class NFCLockScreenOffEnabler implements IXposedHookLoadPackage
+public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHookLoadPackage
 {
 
 	//Thanks to Tungstwenty for the preferences code, which I have taken from his Keyboard42DictInjector and made a bad job of it
@@ -18,10 +19,11 @@ public class NFCLockScreenOffEnabler implements IXposedHookLoadPackage
 	public static final String PREFS = "NFCModSettings";
 	public static final String PREF_LOCKED = "On_Locked";
 
+	private SharedPreferences prefs;
+
 	/* -- */
 	private static final String PACKAGE_NFC = "com.android.nfc";
 
-	private boolean onlyOnLock;
 	private int mScreenState = -1;
 
 	// Taken from NfcService.java, Copyright (C) 2010 The Android Open Source Project, Licensed under the Apache License, Version 2.0
@@ -32,15 +34,18 @@ public class NFCLockScreenOffEnabler implements IXposedHookLoadPackage
 	static final int SCREEN_STATE_ON_UNLOCKED = 3;
 	/* -- */
 
-	public NFCLockScreenOffEnabler()
+	// Thanks to rovo89 for his suggested improvements: http://forum.xda-developers.com/showpost.php?p=35790508&postcount=185
+	@Override
+	public void initZygote(StartupParam startupParam) throws Throwable
 	{
-		final SharedPreferences prefs = AndroidAppHelper.getSharedPreferencesForPackage(MY_PACKAGE_NAME, PREFS, Context.MODE_PRIVATE);
-		onlyOnLock = prefs.getBoolean(PREF_LOCKED, true);
+		prefs = AndroidAppHelper.getSharedPreferencesForPackage(MY_PACKAGE_NAME, PREFS, Context.MODE_PRIVATE);
 	}
 
 	@Override
 	public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable
 	{
+		AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
+
 		if (lpparam.packageName.equals(PACKAGE_NFC))
 		{
 			try
@@ -53,7 +58,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookLoadPackage
 						{
 							synchronized (param.thisObject)   //Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 							{
-								if (onlyOnLock && (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState") != SCREEN_STATE_ON_LOCKED)
+								if (prefs.getBoolean(PREF_LOCKED, true) && (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState") != SCREEN_STATE_ON_LOCKED)
 								{
 									mScreenState = -1;
 									return;
