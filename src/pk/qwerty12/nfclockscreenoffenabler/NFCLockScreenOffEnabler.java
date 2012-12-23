@@ -59,8 +59,8 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 							synchronized (param.thisObject)   //Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 							{
-								int screenState = (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState");
-								if ((screenState == SCREEN_STATE_ON_UNLOCKED) || (prefs.getBoolean(PREF_LOCKED, true) && screenState != SCREEN_STATE_ON_LOCKED))
+								final int currScreenState = (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState");
+								if ((currScreenState == SCREEN_STATE_ON_UNLOCKED) || (prefs.getBoolean(PREF_LOCKED, true) && currScreenState != SCREEN_STATE_ON_LOCKED))
 								{
 									mScreenState = -1;
 									return;
