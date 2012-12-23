@@ -47,21 +47,12 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_marginBottom="20dp"
-            android:text="Changes will only take effect after restarting." />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/textView3"
-            android:layout_alignParentLeft="true"
-            android:layout_marginBottom="40dp"
             android:text="To have NFC behaviour return to the default (only enabled when the screen is on and the phone unlocked), either uninstall this mod or disable this module in Xposed Installer." />
 
     </RelativeLayout>

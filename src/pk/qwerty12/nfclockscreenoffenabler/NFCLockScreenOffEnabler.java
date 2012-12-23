@@ -44,8 +44,6 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	@Override
 	public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable
 	{
-		AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
-
 		if (lpparam.packageName.equals(PACKAGE_NFC))
 		{
 			try
@@ -56,6 +54,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 						@Override
 						protected void beforeHookedMethod(MethodHookParam param) throws Throwable
 						{
+							//Change to preference only takes effect when this is called here
+							AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
+
 							synchronized (param.thisObject)   //Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 							{
 								if (prefs.getBoolean(PREF_LOCKED, true) && (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState") != SCREEN_STATE_ON_LOCKED)
