@@ -28,10 +28,8 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 	// Taken from NfcService.java, Copyright (C) 2010 The Android Open Source Project, Licensed under the Apache License, Version 2.0
 	// Screen state, used by mScreenState
-	static final int SCREEN_STATE_UNKNOWN = 0;
-	static final int SCREEN_STATE_OFF = 1;
-	static final int SCREEN_STATE_ON_LOCKED = 2;
-	static final int SCREEN_STATE_ON_UNLOCKED = 3;
+	private static final int SCREEN_STATE_ON_LOCKED = 2;
+	private static final int SCREEN_STATE_ON_UNLOCKED = 3;
 	/* -- */
 
 	// Thanks to rovo89 for his suggested improvements: http://forum.xda-developers.com/showpost.php?p=35790508&postcount=185
@@ -74,19 +72,18 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 						@Override
 						protected void afterHookedMethod(MethodHookParam param) throws Throwable
 						{
+							if (mScreenState == -1)
+								return;
+
 							synchronized (param.thisObject)
 							{
-								if (mScreenState != -1)
-									XposedHelpers.setIntField(param.thisObject, "mScreenState", mScreenState);
+								XposedHelpers.setIntField(param.thisObject, "mScreenState", mScreenState);
 							}
 						}
 
 				    });
 			}
-			catch (Throwable t)
-			{
-				XposedBridge.log(t);
-			}
+			catch (Throwable t) { XposedBridge.log(t); }
 		}
 	}
 
