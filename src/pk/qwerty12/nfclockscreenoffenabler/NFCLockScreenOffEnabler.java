@@ -24,11 +24,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	/* -- */
 	private static final String PACKAGE_NFC = "com.android.nfc";
 
-	private int mScreenState = -1;
-
 	// Taken from NfcService.java, Copyright (C) 2010 The Android Open Source Project, Licensed under the Apache License, Version 2.0
 	// Screen state, used by mScreenState
-	private static final int SCREEN_STATE_OFF = 1;
+	//private static final int SCREEN_STATE_OFF = 1;
 	private static final int SCREEN_STATE_ON_LOCKED = 2;
 	private static final int SCREEN_STATE_ON_UNLOCKED = 3;
 	/* -- */
@@ -60,13 +58,13 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 							//We also don't need to run if the screen is already on, or if the user has chosen to enable NFC on the lockscreen only and the phone is not locked
 							if ((currScreenState == SCREEN_STATE_ON_UNLOCKED) || (prefs.getBoolean(PREF_LOCKED, true) && currScreenState != SCREEN_STATE_ON_LOCKED))
 							{
-								mScreenState = -1;
+								XposedHelpers.setAdditionalInstanceField(param.thisObject, "mOrigScreenState", -1);
 								return;
 							}
 
 							synchronized (param.thisObject)   //Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 							{
-								mScreenState = XposedHelpers.getIntField(param.thisObject, "mScreenState");
+								XposedHelpers.setAdditionalInstanceField(param.thisObject, "mOrigScreenState", XposedHelpers.getIntField(param.thisObject, "mScreenState"));
 								XposedHelpers.setIntField(param.thisObject, "mScreenState", SCREEN_STATE_ON_UNLOCKED);
 							}
 						}
@@ -74,13 +72,14 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 						@Override
 						protected void afterHookedMethod(MethodHookParam param) throws Throwable
 						{
-							if (mScreenState == -1)
+							final int mOrigScreenState = (Integer) XposedHelpers.getAdditionalInstanceField(param.thisObject, "mOrigScreenState");
+							if (mOrigScreenState == -1)
 								return;
 
 							synchronized (param.thisObject)
 							{
 								//Restore original mScreenState value after applyRouting has run
-								XposedHelpers.setIntField(param.thisObject, "mScreenState", mScreenState);
+								XposedHelpers.setIntField(param.thisObject, "mScreenState", mOrigScreenState);
 							}
 						}
 
