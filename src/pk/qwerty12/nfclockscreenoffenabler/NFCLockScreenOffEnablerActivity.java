@@ -18,8 +18,8 @@ public class NFCLockScreenOffEnablerActivity extends Activity {
 		setContentView(R.layout.activity_nfclock_screen_off_enabler);
 
 		final SharedPreferences prefs = getSharedPreferences(NFCLockScreenOffEnabler.PREFS, Context.MODE_WORLD_READABLE);
-		boolean onlyOnLock = prefs.getBoolean(NFCLockScreenOffEnabler.PREF_LOCKED, true);
-		((RadioButton) findViewById(onlyOnLock ? R.id.radio0 : R.id.radio1)).setChecked(true);
+		if (!prefs.getBoolean(NFCLockScreenOffEnabler.PREF_LOCKED, true))
+			((RadioButton) findViewById(R.id.radio1)).setChecked(true);
 
 		((RadioGroup)findViewById(R.id.radioGroup1)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
 		{
