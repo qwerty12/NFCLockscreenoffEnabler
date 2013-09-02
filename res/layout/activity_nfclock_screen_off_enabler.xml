@@ -10,7 +10,7 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enable NFC, in addition to normal usage when the screen is on, when the:"
+        android:text="@string/NfcScreenOptionsTitle"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <RadioGroup
@@ -23,18 +23,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="phone is locked, but the screen is on" />
+            android:text="@string/LockedScreenOn" />
 
         <RadioButton
             android:id="@+id/radio1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="screen is off (regardless of lock state)" />
+            android:text="@string/ScreenOff" />
     </RadioGroup>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="71dp" >
 
         <TextView
             android:id="@+id/textView2"
@@ -43,8 +43,15 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_marginBottom="20dp"
-            android:text="To have NFC behaviour return to the default (only enabled when the screen is on and the phone unlocked), either uninstall this mod or disable this module in Xposed Installer." />
+            android:text="@string/DisablePluginTips" />
 
     </RelativeLayout>
+
+    <CheckBox
+        android:id="@+id/cbEnableTagLost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/TaglostMessage" />
 
 </LinearLayout>

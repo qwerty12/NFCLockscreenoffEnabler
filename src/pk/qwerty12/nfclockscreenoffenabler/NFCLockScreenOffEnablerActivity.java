@@ -1,8 +1,10 @@
 package pk.qwerty12.nfclockscreenoffenabler;
 
 import android.os.Bundle;
+import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.CheckBox;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -30,6 +32,23 @@ public class NFCLockScreenOffEnablerActivity extends Activity {
 		    	prefsEditor.commit();
 		    }
 		});
+
+		//qlg 2013-08-09
+		((CheckBox) findViewById(R.id.cbEnableTagLost)).setChecked(prefs.getBoolean(NFCLockScreenOffEnabler.PREF_TAGLOST, true));
+		
+		((CheckBox) findViewById(R.id.cbEnableTagLost)).setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener()
+		{
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+		    	Editor prefsEditor = prefs.edit();
+		    	prefsEditor.putBoolean(NFCLockScreenOffEnabler.PREF_TAGLOST, isChecked);
+		    	prefsEditor.commit();
+			}
+			
+		});
+
 	}
 
 }

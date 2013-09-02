@@ -4,5 +4,10 @@
     <string name="app_name">NFC LockScreenOff Enabler</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="NfcScreenOptionsTitle">Enable NFC, in addition to normal usage when the screen is on, when the:</string>
+    <string name="LockedScreenOn">phone is locked, but the screen is on</string>
+    <string name="ScreenOff">screen is off (regardless of lock state)</string>
+    <string name="DisablePluginTips">To have NFC behaviour return to the default (only enabled when the screen is on and the phone unlocked), either uninstall this mod or disable this module in Xposed Installer.</string>
+    <string name="TaglostMessage">Enabled Taglost Message</string>
 
 </resources>
