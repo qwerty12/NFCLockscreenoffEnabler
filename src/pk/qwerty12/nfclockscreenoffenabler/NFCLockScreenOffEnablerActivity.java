@@ -1,82 +1,121 @@
 package pk.qwerty12.nfclockscreenoffenabler;
 
-import android.os.Bundle;
-import android.widget.CompoundButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.CheckBox;
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
 
-public class NFCLockScreenOffEnablerActivity extends Activity {
+public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 
-	private RadioButton mRadio1 = null;
-	private RadioGroup mRadioGroup = null;
-	private CheckBox mEnableTagLostCheckBox = null;
-	private CheckBox mEnableTagLostSoundCheckBox = null;
+	private CheckBoxPreference mEnableTagLostCheckBox = null;
+	private CheckBoxPreference mEnableTagLostSoundCheckBox = null;
+	private ListPreference mEnableNfcForStatesList = null;
+	private Preference mCopyrightPreference = null;
 	
 	@SuppressWarnings("deprecation")
 	@SuppressLint("WorldReadableFiles")
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_nfclock_screen_off_enabler);
-		
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		getPreferenceManager().setSharedPreferencesMode(MODE_WORLD_READABLE);
+		addPreferencesFromResource(R.xml.pref_general);
 		getViews();
-
+		
 		final SharedPreferences prefs = getSharedPreferences(Common.PREFS, Context.MODE_WORLD_READABLE);
-		if (!prefs.getBoolean(Common.PREF_LOCKED, true))
-			mRadio1.setChecked(true);
-
-		mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-		    public void onCheckedChanged(RadioGroup rGroup, int checkedId) {
-				Editor prefsEditor = prefs.edit();
-				prefsEditor.putBoolean(Common.PREF_LOCKED, checkedId == R.id.radio0);
-				prefsEditor.commit();
-				
-				emitSettingsChanged();
-		    }
-		});
-
 		mEnableTagLostCheckBox.setChecked(prefs.getBoolean(Common.PREF_TAGLOST, true));
-		mEnableTagLostCheckBox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+		mEnableTagLostCheckBox.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				
+				boolean isChecked = (Boolean) newValue;
+				mEnableTagLostSoundCheckBox.setEnabled(isChecked);
+				
 				Editor prefsEditor = prefs.edit();
 				prefsEditor.putBoolean(Common.PREF_TAGLOST, isChecked);
 				prefsEditor.commit();
 				
 				emitSettingsChanged();
+				return true;
 			}
 		});
 		
+		mEnableTagLostSoundCheckBox.setEnabled(mEnableTagLostCheckBox.isChecked());
 		mEnableTagLostSoundCheckBox.setChecked(prefs.getBoolean(Common.PLAY_TAG_LOST_SOUND, true));
-		mEnableTagLostSoundCheckBox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+		mEnableTagLostSoundCheckBox.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				Editor prefsEditor = prefs.edit();
-				prefsEditor.putBoolean(Common.PLAY_TAG_LOST_SOUND, isChecked);
+				prefsEditor.putBoolean(Common.PLAY_TAG_LOST_SOUND, (Boolean) newValue);
 				prefsEditor.commit();
 				
 				emitSettingsChanged();
+				return true;
+			}
+		});
+		
+		if (!prefs.getBoolean(Common.PREF_LOCKED, true))
+			mEnableNfcForStatesList.setValue("screen_off");
+		
+		mEnableNfcForStatesList.setDefaultValue("locked_screen_on");
+		mEnableNfcForStatesList.setSummary("%s");
+		mEnableNfcForStatesList.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {				
+				Editor prefsEditor = prefs.edit();
+				prefsEditor.putBoolean(Common.PREF_LOCKED, ("locked_screen_on".equals(newValue)));
+				prefsEditor.commit();
+				
+				emitSettingsChanged();
+				
+				mEnableNfcForStatesList.setSummary("   "); // required or will not update
+				mEnableNfcForStatesList.setSummary("%s");
+				return true;
+			}
+		});
+		
+		mCopyrightPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				String[] contributors = getResources().getStringArray(R.array.contributors);
+				
+				String contributorString = "";
+				
+				for (int i = 0; i < contributors.length; i++) {
+					if (i != 0)
+						contributorString += "\n";
+					contributorString += "* " + contributors[i];
+				}
+				
+				AlertDialog.Builder alertDialog = new AlertDialog.Builder(NFCLockScreenOffEnablerActivity.this)
+				.setTitle(R.string.contributors_title)
+				.setMessage(contributorString);
+				
+		        alertDialog.show();
+				return true;
 			}
 		});
 	}
 
+	@SuppressWarnings("deprecation")
 	private void getViews() {
-		mEnableTagLostCheckBox = (CheckBox) findViewById(R.id.cbEnableTagLost);
-		mEnableTagLostSoundCheckBox = (CheckBox) findViewById(R.id.play_tag_lost_checkbox);
-		mRadioGroup = (RadioGroup) findViewById(R.id.radioGroup1);
-		mRadio1 = ((RadioButton) findViewById(R.id.radio1));
+		mEnableTagLostCheckBox = (CheckBoxPreference) findPreference(Common.PREF_TAGLOST);
+		mEnableTagLostSoundCheckBox = (CheckBoxPreference) findPreference(Common.PLAY_TAG_LOST_SOUND);
+		mEnableNfcForStatesList = (ListPreference) findPreference("enable_nfc_for_lock_state");
+		mCopyrightPreference = (Preference) findPreference("copyright_key");
 	}
 
 	protected void emitSettingsChanged() {
 		Intent i = new Intent(Common.SETTINGS_UPDATED_INTENT);
 		sendBroadcast(i);
 	}
-
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <Preference android:title="@string/app_name" android:summary="@string/copyright_summary" android:key="copyright_key" /><ListPreference android:entries="@array/pref_lockstate_titles" android:entryValues="@array/pref_lockstate_values" android:key="enable_nfc_for_lock_state" android:title="@string/pref_title_enable_nfc_for_lock_state" />
+    <CheckBoxPreference android:title="@string/TaglostMessage" android:key="TagLostDetecting" android:summary="@string/pref_description_enable_tag_lost_detection"/><CheckBoxPreference android:title="@string/play_tag_lost_sound" android:key="should_play_tag_lost_sound" android:summary="@string/pref_description_play_tag_lost_sound" />
+    
+</PreferenceScreen>

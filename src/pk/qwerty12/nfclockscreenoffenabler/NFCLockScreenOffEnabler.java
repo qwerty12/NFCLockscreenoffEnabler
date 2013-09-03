@@ -29,7 +29,14 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 {
 	//Thanks to Tungstwenty for the preferences code, which I have taken from his Keyboard42DictInjector and made a bad job of it
 	private static final String MY_PACKAGE_NAME = NFCLockScreenOffEnabler.class.getPackage().getName();
+	private String MODULE_PATH;
+	
 	private SharedPreferences prefs;
+	private Context mContext = null;
+	
+	private XModuleResources modRes = null;
+	private SoundPool mSoundPool = null;
+	private Object nfcServiceObject = null;
 
 	// Taken from NfcService.java, Copyright (C) 2010 The Android Open Source Project, Licensed under the Apache License, Version 2.0
 	// Screen state, used by mScreenState
@@ -37,12 +44,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	private static final int SCREEN_STATE_ON_LOCKED = 2;
 	private static final int SCREEN_STATE_ON_UNLOCKED = 3;
 	
-	private Context mContext = null;
 	int mTagLostSound;
-	private String MODULE_PATH;
-	private XModuleResources modRes = null;
-	private SoundPool mSoundPool = null;
-	private Object nfcServiceObject = null;
 	
 	//Hook for NfcNativeTag$PresenceCheckWatchdog.run()
 	class PresenceCheckWatchdogRunHook extends XC_MethodHook
