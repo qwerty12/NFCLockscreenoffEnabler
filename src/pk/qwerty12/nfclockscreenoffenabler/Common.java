@@ -6,6 +6,7 @@ public class Common {
 	public static final String PREFS = "NFCModSettings";
 	public static final String PREF_LOCKED = "On_Locked";
 	public static final String PREF_TAGLOST = "TagLostDetecting";
+	public static final String PLAY_TAG_LOST_SOUND = "should_play_tag_lost_sound";
 	
 	/* -- */
 	public static final String PACKAGE_NFC = "com.android.nfc";

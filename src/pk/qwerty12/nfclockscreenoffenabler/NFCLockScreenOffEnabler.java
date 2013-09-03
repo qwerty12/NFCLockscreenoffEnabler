@@ -13,6 +13,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.XModuleResources;
+import android.media.SoundPool;
 import android.nfc.NfcAdapter;
 import android.util.Log;
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -36,6 +38,11 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	private static final int SCREEN_STATE_ON_UNLOCKED = 3;
 	
 	private Context mContext = null;
+	int mTagLostSound;
+	private String MODULE_PATH;
+	private XModuleResources modRes = null;
+	private SoundPool mSoundPool = null;
+	private Object nfcServiceObject = null;
 	
 	//Hook for NfcNativeTag$PresenceCheckWatchdog.run()
 	class PresenceCheckWatchdogRunHook extends XC_MethodHook
@@ -68,7 +75,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			}
 
 			Log.d("PresenceCheckWatchdogRunHook",  "step-4 context != null");
-			try{
+			try {
 				byte[] uId = (byte[]) XposedHelpers.callMethod(XposedHelpers.getSurroundingThis(param.thisObject), "getUid");
 				Intent intentToStart = new Intent();
 				intentToStart.putExtra(NfcAdapter.EXTRA_ID, uId);
@@ -92,7 +99,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 								String.format("activities.size() <= 0 (%x%x%x%x)", uId[0], uId[1], uId[2], uId[3]));
 					}
 				}
-			}catch (Exception e) {  
+				
+				playTagLostSound();
+			} catch (Exception e) {  
 				e.printStackTrace();  
 			}  
 		}
@@ -125,6 +134,21 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	public void initZygote(StartupParam startupParam) throws Throwable
 	{
 		prefs = AndroidAppHelper.getSharedPreferencesForPackage(MY_PACKAGE_NAME, Common.PREFS, Context.MODE_PRIVATE);
+		MODULE_PATH = startupParam.modulePath;
+	}
+
+	public void playTagLostSound() {
+		if (!prefs.getBoolean(Common.PLAY_TAG_LOST_SOUND, true))
+			return;
+		
+		synchronized (nfcServiceObject) {
+			if (mSoundPool == null) {
+				Log.w("NfcService", "Not playing sound when NFC is disabled");
+				return;
+			}
+			
+			mSoundPool.play(mTagLostSound, 1.0f, 1.0f, 0, 0, 1.0f);
+		}
 	}
 
 	@Override
@@ -132,6 +156,8 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	{
 		if (lpparam.packageName.equals(Common.PACKAGE_NFC))
 		{
+			modRes = XModuleResources.createInstance(MODULE_PATH, null);
+			
 			try {
 				Class<?> NfcService = findClass(Common.PACKAGE_NFC + ".NfcService", lpparam.classLoader);
 				
@@ -142,6 +168,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					@Override
 					protected void afterHookedMethod(MethodHookParam param)
 							throws Throwable {
+						nfcServiceObject = param.thisObject;
 						mContext = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
 						mContext.registerReceiver(new BroadcastReceiver() {
 							@Override
@@ -150,6 +177,18 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 								AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
 							}
 						}, new IntentFilter(Common.SETTINGS_UPDATED_INTENT));
+					}
+				});
+				
+				findAndHookMethod(NfcService, "initSoundPool", new XC_MethodHook() {
+					@Override
+					protected void afterHookedMethod(MethodHookParam param)
+							throws Throwable {
+						mSoundPool = (SoundPool) XposedHelpers.getObjectField(param.thisObject, "mSoundPool");
+						synchronized (param.thisObject) {
+							if (mSoundPool != null)
+								mTagLostSound = mSoundPool.load(modRes.openRawResourceFd(R.raw.tag_lost), 1);
+						}
 					}
 				});
 				

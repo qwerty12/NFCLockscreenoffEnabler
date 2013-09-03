@@ -9,5 +9,6 @@
     <string name="ScreenOff">screen is off (regardless of lock state)</string>
     <string name="DisablePluginTips">To have NFC behaviour return to the default (only enabled when the screen is on and the phone unlocked), either uninstall this mod or disable this module in Xposed Installer.</string>
     <string name="TaglostMessage">Enabled Taglost Message</string>
+    <string name="play_tag_lost_sound">Play tag lost sound</string>
 
 </resources>

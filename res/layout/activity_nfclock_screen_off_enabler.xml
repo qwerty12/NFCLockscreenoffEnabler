@@ -54,4 +54,11 @@
         android:checked="true"
         android:text="@string/TaglostMessage" />
 
+    <CheckBox
+        android:id="@+id/play_tag_lost_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/play_tag_lost_sound" />
+
 </LinearLayout>
