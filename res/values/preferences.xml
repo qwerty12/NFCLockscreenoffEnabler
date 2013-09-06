@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_lockstate_titles">
+        <item >@string/LockedScreenOn</item>
+        <item >@string/ScreenOff</item>
+    </string-array>
+    <string-array name="pref_lockstate_values">
+        <item >locked_screen_on</item>
+        <item >screen_off</item>
+    </string-array>
+    
+</resources>
